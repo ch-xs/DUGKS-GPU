@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstddef>
 
 #include "precision.h"
 
@@ -7,7 +8,7 @@
 //***************************************************************************
 namespace DVM {
 
-    extern const int npop=19;
+    extern const std::size_t npop=19;
     //         0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18
     extern const int cix[]={0,  1, -1,  0,  0,  0,  0,  1, -1,  1, -1,  1, -1,  1, -1,  0,  0,  0,  0};
     extern const int ciy[]={0,  0,  0,  1, -1,  0,  0,  1,  1, -1, -1,  0,  0,  0,  0,  1, -1,  1, -1};

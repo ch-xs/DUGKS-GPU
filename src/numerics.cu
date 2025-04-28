@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cstddef>
 
 #include "precision.h"
 #include "lbm_d3q19.h"
@@ -19,7 +20,7 @@ namespace Numerics {
     real zwidth;
 
     // Mesh resolution
-    int nx, ny, nz;
+    std::size_t nx, ny, nz;
 
     // Cell sizes
     real dx, dy, dz;

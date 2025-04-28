@@ -24,7 +24,19 @@ void dump(int step, const real *f)
     real *fg = nullptr;
 
     if (root()) {
-        fg=new real[DVM::npop*nx*ny*nz];
+        try {
+            std::size_t length=DVM::npop*nx*ny*nz;
+            fg=new real[length];
+        } catch (std::bad_array_new_length) {
+            std::size_t length=DVM::npop*nx*ny*nz;
+            std::cerr << length << std::endl;
+            std::cerr << DVM::npop*nx*ny*nz << std::endl;
+            std::cerr << "npop=" << DVM::npop <<std::endl;
+            std::cerr << "nx=" << nx <<std::endl;
+            std::cerr << "ny=" << ny <<std::endl;
+            std::cerr << "nz=" << nz <<std::endl;
+            std::cerr << "npopnxnynz=" << DVM::npop <<std::endl;
+        }
     }
 
     collect_f(fg, f);
@@ -112,6 +124,77 @@ void output(int step, real *rho, real *ux, real *uy, real *uz)
     }
 }
 
+void save_tecplot3D_serial(const real rhg[],
+    const real uxg[], const real uyg[], const real uzg[],
+    const int nx, const int ny, const int nz, const int step)
+{
+    char temp[16];
+    std::ofstream file;
+
+    // 3D
+    sprintf(temp, "F3D%8.8d.tec\0", step);
+    file.open(temp);
+    file << "TITLE = \"Example: Simple 3D-Field Data\"" << std::endl;
+    file << "VARIABLES = \"X\", \"Y\", \"Z\", \"RHO\", \"UX\", \"UY\", \"UZ\"" << std::endl;
+    file << "ZONE I=" << nx << ", J=" << ny << ", K=" << nz << " F=POINT" << std::endl;
+
+    for (int k=0; k<nz; k++) {
+        for (int j=0; j<ny; j++) {
+            for (int i=0; i<nx; i++) {
+                int ijk=k*(ny+0)*(nx+0)+j*(nx+0)+i;
+                file << (i+0.5)*dx << " " << (j+0.5)*dy << " " << (k+0.5)*dz << " "
+                << rhg[ijk] << " "
+                << uxg[ijk] << " "
+                << uyg[ijk] << " "
+                << uzg[ijk] << std::endl;
+            }
+        }
+    }
+    file.close();
+}
+
+void save_tecplot3D_serial_binary(const real rhg[],
+    const real uxg[], const real uyg[], const real uzg[],
+    const int nx, const int ny, const int nz, const int step)
+{
+    char temp[32];
+    std::ofstream file;
+
+    sprintf(temp, "F3D%8.8d.bin", step);
+    file.open(temp, std::ios::out | std::ios::binary);
+
+    if (!file.is_open()) {
+        std::cerr << "Error opening file for writing!" << std::endl;
+        return;
+    }
+
+    file.write((char*)&nx, sizeof(int));
+    file.write((char*)&ny, sizeof(int));
+    file.write((char*)&nz, sizeof(int));
+
+    for (int k = 0; k < nz; k++) {
+        for (int j = 0; j < ny; j++) {
+            for (int i = 0; i < nx; i++) {
+                int ijk = k * (ny+0) * (nx+0) + j * (nx+0) + i;
+
+                real x = (i + 0.5) * dx;
+                real y = (j + 0.5) * dy;
+                real z = (k + 0.5) * dz;
+
+                file.write((char*)&x, sizeof(real));
+                file.write((char*)&y, sizeof(real));
+                file.write((char*)&z, sizeof(real));
+                file.write((char*)&rhg[ijk], sizeof(real));
+                file.write((char*)&uxg[ijk], sizeof(real));
+                file.write((char*)&uyg[ijk], sizeof(real));
+                file.write((char*)&uzg[ijk], sizeof(real));
+            }
+        }
+    }
+
+    file.close();
+}
+
 // ==========================================================================
 // Save 2D slices
 // ==========================================================================
@@ -135,6 +218,8 @@ void output_2d(int step, real *rho, real *ux, real *uy, real *uz)
 
     if (root()) {
         save_tecplot_serial(rhg, uxg, uyg, uzg, nx, ny, nz, step);
+        save_tecplot3D_serial_binary(rhg, uxg, uyg, uzg, nx, ny, nz, step);
+        // save_tecplot3D_serial(rhg, uxg, uyg, uzg, nx, ny, nz, step);
         statistics_serial(rhg, uxg, uyg, uzg, nx, ny, nz, step);
     }
 

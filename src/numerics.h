@@ -9,7 +9,7 @@ namespace Numerics {
     extern std::string predef_case;
     
     extern real xwidth, ywidth, zwidth;
-    extern int nx, ny, nz;
+    extern std::size_t nx, ny, nz;
     extern int lx, ly, lz;
     extern int istep0, nsteps;
 

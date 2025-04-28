@@ -7,7 +7,7 @@
 
 namespace DVM {
 
-    extern const int npop;
+    extern const std::size_t npop;
     extern const int cix[];
     extern const int ciy[];
     extern const int ciz[];
